@@ -23,50 +23,82 @@ class MyApp extends StatelessWidget {
             surface: Colors.white,
             onSurface: Colors.black),
         useMaterial3: true,
+        extensions: const <ThemeExtension<dynamic>>[
+          CustomTextStyle(
+              buttonText: TextStyle(fontSize: 37, color: Colors.black),
+              mathText: TextStyle(
+                  fontSize: 50,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold)),
+        ],
       ),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorScheme: const ColorScheme(
-            primary: Color(0xFF1c1c1c),
-            brightness: Brightness.dark,
-            onPrimary: Color(0xFFfcfcfc),
-            secondary: Color(0xFF313131),
-            onSecondary: Colors.white,
-            error: Colors.red,
-            onError: Colors.white,
-            surface: Color(0xFF1c1c1c),
-            onSurface: Colors.white),
-        useMaterial3: true,
-      ),
+          brightness: Brightness.dark,
+          colorScheme: const ColorScheme(
+              primary: Color(0xFF1c1c1c),
+              brightness: Brightness.dark,
+              onPrimary: Color(0xFFfcfcfc),
+              secondary: Color(0xFF313131),
+              onSecondary: Colors.white,
+              error: Colors.red,
+              onError: Colors.white,
+              surface: Color(0xFF1c1c1c),
+              onSurface: Colors.white),
+          useMaterial3: true,
+          extensions: const <ThemeExtension<dynamic>>[
+            CustomTextStyle(
+                buttonText: TextStyle(fontSize: 37, color: Color(0xFFfcfcfc)),
+                mathText: TextStyle(
+                    fontSize: 50,
+                    color: Color(0xFFfcfcfc),
+                    fontWeight: FontWeight.bold)),
+          ]),
       themeMode: ThemeMode.system,
       home: const MyHomePage(),
     );
   }
 }
 
-class CustomTextStyle {
-  static TextStyle getButtonText(BuildContext context) {
-    return TextStyle(
-      fontSize: 37,
-      color: Theme.of(context).colorScheme.onPrimary,
+class CustomTextStyle extends ThemeExtension<CustomTextStyle> {
+  final TextStyle buttonText;
+  final TextStyle mathText;
+
+  const CustomTextStyle({required this.buttonText, required this.mathText});
+
+  @override
+  CustomTextStyle copyWith({TextStyle? buttonText, TextStyle? mathText}) {
+    return CustomTextStyle(
+      buttonText: buttonText ?? this.buttonText,
+      mathText: mathText ?? this.mathText,
     );
   }
 
-  static TextStyle getMathText(BuildContext context) {
-    return TextStyle(
-        fontSize: 50,
-        color: Theme.of(context).colorScheme.onPrimary,
-        fontWeight: FontWeight.bold);
+  @override
+  CustomTextStyle lerp(CustomTextStyle? other, double t) {
+    if (other is! CustomTextStyle) return this;
+    return CustomTextStyle(
+      buttonText: TextStyle.lerp(buttonText, other.buttonText, t)!,
+      mathText: TextStyle.lerp(mathText, other.mathText, t)!,
+    );
   }
+}
+
+enum CalculatorOperator {
+  add,
+  subtract,
+  multiply,
+  divide,
+  equal,
 }
 
 class CalculatorButton extends StatelessWidget {
   final String text;
-  final Function(String) onPressed;
-
+  final Function(String, CalculatorOperator?) onPressed;
+  final CalculatorOperator? operator;
   const CalculatorButton({
     required this.text,
     required this.onPressed,
+    this.operator,
     super.key,
   });
 
@@ -74,12 +106,15 @@ class CalculatorButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: TextButton(
-        child: Text(text, style: CustomTextStyle.getButtonText(context)),
-        onPressed: () => onPressed(text),
+        child: Text(text,
+            style: Theme.of(context).extension<CustomTextStyle>()?.buttonText),
+        onPressed: () => onPressed(text, operator),
       ),
     );
   }
 }
+
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -92,46 +127,41 @@ class _MyHomePageState extends State<MyHomePage> {
   var calculatorText = "";
   num firstNumber = 0;
   num secondNumber = 0;
-  var operator = "";
+  CalculatorOperator? currentOperator;
   var lastPressed = "";
   bool negative = false;
 
-  bool isOperator(String x) {
-    if (x == '÷' || x == '×' || x == '-' || x == '+' || x == '=') {
-      return true;
-    }
-    return false;
+  void clear(String value, CalculatorOperator? operator) {
+    setState(() {
+      calculatorText = "";
+      firstNumber = 0;
+      secondNumber = 0;
+      currentOperator = null;
+      lastPressed = "";
+      negative = false;
+    });
   }
 
-  void clear(String value) {
-    calculatorText = "";
-    firstNumber = 0;
-    secondNumber = 0;
-    operator = "";
-    lastPressed = "";
-    setState(() {});
-  }
-
-  void calculate(String value) {
-    if (isOperator(value)) {
+  void calculate(String value, CalculatorOperator? operator) {
+    if (operator != null) {
       if (lastPressed != "") {
-        if (value == "=") {
-          if (operator == "add") {
+        if (operator == CalculatorOperator.equal) {
+          if (currentOperator == CalculatorOperator.add) {
             firstNumber = negative
                 ? -firstNumber + secondNumber
                 : firstNumber + secondNumber;
           }
-          if (operator == "subtract") {
+          if (currentOperator == CalculatorOperator.subtract) {
             firstNumber = negative
                 ? -firstNumber - secondNumber
                 : firstNumber - secondNumber;
           }
-          if (operator == "multiply") {
+          if (currentOperator == CalculatorOperator.multiply) {
             firstNumber = negative
                 ? -firstNumber * secondNumber
                 : firstNumber * secondNumber;
           }
-          if (operator == "divide") {
+          if (currentOperator == CalculatorOperator.divide) {
             if (secondNumber == 0) {
               calculatorText = ":(";
             } else if (firstNumber % secondNumber == 0) {
@@ -144,43 +174,29 @@ class _MyHomePageState extends State<MyHomePage> {
                   : firstNumber / secondNumber;
             }
           }
-          if (firstNumber is int) {
+          if (firstNumber is int) { //handle integers
             calculatorText = firstNumber.toString();
-          } else {
+          } else { //handle decimals
             calculatorText = firstNumber
                 .toStringAsFixed(10 - firstNumber.toStringAsFixed(0).length);
           }
-          operator = "";
+          currentOperator = null;
           secondNumber = 0;
+          negative = false;
+        } else if (currentOperator == null && calculatorText != "") {
+          currentOperator = operator;
+          calculatorText += value;
         }
-        if (operator == "" && calculatorText != " ") {
-          if (value == '+') {
-            operator = "add";
-            calculatorText += value;
-          }
-          if (value == '-') {
-            operator = "subtract";
-            calculatorText += value;
-          }
-          if (value == '×') {
-            operator = "multiply";
-            calculatorText += value;
-          }
-          if (value == '÷') {
-            operator = "divide";
-            calculatorText += value;
-          }
-        }
-      } else if (value == '-') {
+      } else if (value == '-') { //handle negative numbers
         calculatorText += value;
         negative = true;
       }
     } else if (value != "C") {
-      if (lastPressed == "" || lastPressed == "=") {
+      if (lastPressed == "" || lastPressed == '=') {
         calculatorText = value;
         firstNumber = int.parse(value);
       } else {
-        if (operator == "") {
+        if (currentOperator == null) {
           firstNumber = firstNumber * 10 + int.parse(value);
           calculatorText += value;
         } else {
@@ -189,122 +205,122 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     }
-    setState(() {});
     lastPressed = value;
+    setState(() {}); 
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-                height: 168,
-                child: DecoratedBox(
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondary),
-                    child: Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 30, right: 30, bottom: 10),
-                            child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                    calculatorText == "" ? " " : calculatorText,
-                                    style: CustomTextStyle.getMathText(
-                                        context))))))),
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(children: [
-                      CalculatorButton(
-                        text: "7",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "8",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "9",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "×",
-                        onPressed: calculate,
-                      ),
-                    ]))),
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(children: [
-                      CalculatorButton(
-                        text: "4",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "5",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "6",
-                        onPressed: calculate,
-                      ),
-                      CalculatorButton(
-                        text: "÷",
-                        onPressed: calculate,
-                      ),
-                    ]))),
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          CalculatorButton(
-                            text: "1",
-                            onPressed: calculate,
-                          ),
-                          CalculatorButton(
-                            text: "2",
-                            onPressed: calculate,
-                          ),
-                          CalculatorButton(
-                            text: "3",
-                            onPressed: calculate,
-                          ),
-                          CalculatorButton(
-                            text: "-",
-                            onPressed: calculate,
-                          ),
-                        ]))),
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          CalculatorButton(
-                            text: "C",
-                            onPressed: clear,
-                          ),
-                          CalculatorButton(
-                            text: "0",
-                            onPressed: calculate,
-                          ),
-                          CalculatorButton(
-                            text: "=",
-                            onPressed: calculate,
-                          ),
-                          CalculatorButton(
-                            text: "+",
-                            onPressed: calculate,
-                          ),
-                        ]))),
-          ],
-        ),
+      body: Column(
+        children: <Widget>[
+          Container(
+              height: 168,
+              color: Theme.of(context).colorScheme.secondary,
+              child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 30, right: 30, bottom: 10),
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                              calculatorText == "" ? " " : calculatorText,
+                              style: Theme.of(context)
+                                  .extension<CustomTextStyle>()
+                                  ?.mathText))))),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(children: [
+                    CalculatorButton(
+                      text: "7",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "8",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "9",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "×",
+                      onPressed: calculate,
+                      operator: CalculatorOperator.multiply,
+                    ),
+                  ]))),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(children: [
+                    CalculatorButton(
+                      text: "4",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "5",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "6",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "÷",
+                      onPressed: calculate,
+                      operator: CalculatorOperator.divide,
+                    ),
+                  ]))),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child:
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    CalculatorButton(
+                      text: "1",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "2",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "3",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "-",
+                      onPressed: calculate,
+                      operator: CalculatorOperator.subtract,
+                    ),
+                  ]))),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child:
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    CalculatorButton(
+                      text: "C",
+                      onPressed: clear,
+                    ),
+                    CalculatorButton(
+                      text: "0",
+                      onPressed: calculate,
+                    ),
+                    CalculatorButton(
+                      text: "=",
+                      onPressed: calculate,
+                      operator: CalculatorOperator.equal,
+                    ),
+                    CalculatorButton(
+                      text: "+",
+                      onPressed: calculate,
+                      operator: CalculatorOperator.add,
+                    ),
+                  ]))),
+        ],
       ),
     );
   }
