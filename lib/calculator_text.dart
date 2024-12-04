@@ -27,37 +27,43 @@ class CalculatorText extends ChangeNotifier {
     if (operator != null) {
       if (lastPressed != "") {
         if (operator == CalculatorOperator.equal) {
-          if (currentOperator == CalculatorOperator.add) {
-            firstNumber = negative
-                ? -firstNumber + secondNumber
-                : firstNumber + secondNumber;
-          }
-          if (currentOperator == CalculatorOperator.subtract) {
-            firstNumber = negative
-                ? -firstNumber - secondNumber
-                : firstNumber - secondNumber;
-          }
-          if (currentOperator == CalculatorOperator.multiply) {
-            firstNumber = negative
-                ? -firstNumber * secondNumber
-                : firstNumber * secondNumber;
-          }
-          if (currentOperator == CalculatorOperator.divide) {
-            if (secondNumber == 0) {
-              calculatorText = ":(";
-            } else if (firstNumber % secondNumber == 0) {
+          switch (currentOperator) {
+            case CalculatorOperator.add:
               firstNumber = negative
-                  ? -firstNumber ~/ secondNumber
-                  : firstNumber ~/ secondNumber;
-            } else {
+                  ? -firstNumber + secondNumber
+                  : firstNumber + secondNumber;
+              break;
+            case CalculatorOperator.subtract:
               firstNumber = negative
-                  ? -firstNumber / secondNumber
-                  : firstNumber / secondNumber;
-            }
+                  ? -firstNumber - secondNumber
+                  : firstNumber - secondNumber;
+              break;
+            case CalculatorOperator.multiply:
+              firstNumber = negative
+                  ? -firstNumber * secondNumber
+                  : firstNumber * secondNumber;
+              break;
+            case CalculatorOperator.divide:
+              if (secondNumber == 0) {
+                calculatorText = ":(";
+              } else if (firstNumber % secondNumber == 0) {
+                firstNumber = negative
+                    ? -firstNumber ~/ secondNumber
+                    : firstNumber ~/ secondNumber;
+              } else {
+                firstNumber = negative
+                    ? -firstNumber / secondNumber
+                    : firstNumber / secondNumber;
+              }
+              break;
+            default:
+              break;
           }
-          if (firstNumber is int) { //handle integers
+          if (firstNumber is int) {
+            //handle integers
             calculatorText = firstNumber.toString();
-          } else { //handle decimals
+          } else {
+            //handle decimals
             calculatorText = firstNumber
                 .toStringAsFixed(10 - firstNumber.toStringAsFixed(0).length);
           }
@@ -68,7 +74,8 @@ class CalculatorText extends ChangeNotifier {
           currentOperator = operator;
           calculatorText += value;
         }
-      } else if (value == '-') { //handle negative numbers
+      } else if (value == '-') {
+        //handle negative numbers
         calculatorText += value;
         negative = true;
       }
