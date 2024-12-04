@@ -21,7 +21,7 @@ class CalculatorButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: TextButton(
-        child: Text(text, style: Theme.of(context).extension<CustomTextStyle>()?.buttonText ?? TextStyle()),
+        child: Text(text, style: Theme.of(context).buttonText),
         onPressed: () => onPressed(text, operator),
       ),
     );

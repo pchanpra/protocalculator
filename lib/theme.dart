@@ -24,6 +24,15 @@ class CustomTextStyle extends ThemeExtension<CustomTextStyle> {
   }
 }
 
+extension ThemeDataExtension on ThemeData {
+  TextStyle get buttonText {
+    return brightness == Brightness.light ? TextStyle(fontSize: 37, color: Colors.black) : TextStyle(fontSize: 37, color: Color(0xFFfcfcfc));
+  }
+  TextStyle get mathText {
+    return brightness == Brightness.light ? TextStyle(fontSize: 50, color: Colors.black, fontWeight: FontWeight.bold) : TextStyle(fontSize: 50, color: Color(0xFFfcfcfc), fontWeight: FontWeight.bold);
+  }
+}
+
 class CustomTheme {
   static ThemeData lightTheme = ThemeData(
         colorScheme: const ColorScheme(

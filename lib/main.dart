@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'calculator_text.dart';
+import 'calculator_bloc.dart';
 import 'calculator_operator.dart';
 import 'calculator_button.dart';
 import 'theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'calculator_state.dart';
+import 'calculator_event.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -18,8 +20,8 @@ class MyApp extends StatelessWidget {
       theme: CustomTheme.lightTheme,
       darkTheme: CustomTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: ChangeNotifierProvider(
-          create: (context) => CalculatorText(), child: const MyHomePage()),
+      home: BlocProvider(
+          create: (context) => CalculatorBloc(), child: const MyHomePage()),
     );
   }
 }
@@ -29,6 +31,8 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final calculatorBloc = context.read<CalculatorBloc>();
+
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -42,31 +46,32 @@ class MyHomePage extends StatelessWidget {
                           left: 30, right: 30, bottom: 10),
                       child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(
-                              context.watch<CalculatorText>().calculatorText == ""
+                          child: BlocBuilder<CalculatorBloc, CalculatorState>(
+                              builder: (context, state) => Text(
+                              state.calculatorText == ""
                                   ? " "
-                                  : context.watch<CalculatorText>().calculatorText,
-                              style: Theme.of(context).extension<CustomTextStyle>()?.mathText ?? TextStyle(),
-                              ))))),
+                                  : state.calculatorText,
+                              style: Theme.of(context).mathText,
+                              )))))),
           Expanded(
               child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: Row(children: [
                     CalculatorButton(
                       text: "7",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "7", operator: null)),
                     ),
                     CalculatorButton(
                       text: "8",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "8", operator: null)),
                     ),
                     CalculatorButton(
                       text: "9",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "9", operator: null)),
                     ),
                     CalculatorButton(
                       text: "×",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "×", operator: CalculatorOperator.multiply)),
                       operator: CalculatorOperator.multiply,
                     ),
                   ]))),
@@ -76,19 +81,19 @@ class MyHomePage extends StatelessWidget {
                   child: Row(children: [
                     CalculatorButton(
                       text: "4",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "4", operator: null)),
                     ),
                     CalculatorButton(
                       text: "5",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "5", operator: null)),
                     ),
                     CalculatorButton(
                       text: "6",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "6", operator: null)),
                     ),
                     CalculatorButton(
                       text: "÷",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "÷", operator: CalculatorOperator.divide)),
                       operator: CalculatorOperator.divide,
                     ),
                   ]))),
@@ -99,19 +104,19 @@ class MyHomePage extends StatelessWidget {
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     CalculatorButton(
                       text: "1",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "1", operator: null)),
                     ),
                     CalculatorButton(
                       text: "2",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "2", operator: null)),
                     ),
                     CalculatorButton(
                       text: "3",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "3", operator: null)),
                     ),
                     CalculatorButton(
                       text: "-",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "-", operator: CalculatorOperator.subtract)),
                       operator: CalculatorOperator.subtract,
                     ),
                   ]))),
@@ -122,20 +127,20 @@ class MyHomePage extends StatelessWidget {
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     CalculatorButton(
                       text: "C",
-                      onPressed: context.read<CalculatorText>().clear,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorClearEvent()),
                     ),
                     CalculatorButton(
                       text: "0",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "0", operator: null)),
                     ),
                     CalculatorButton(
                       text: "=",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "=", operator: CalculatorOperator.equal)),
                       operator: CalculatorOperator.equal,
                     ),
                     CalculatorButton(
                       text: "+",
-                      onPressed: context.read<CalculatorText>().calculate,
+                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "+", operator: CalculatorOperator.add)),
                       operator: CalculatorOperator.add,
                     ),
                   ]))),
