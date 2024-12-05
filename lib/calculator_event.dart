@@ -10,3 +10,5 @@ class CalculatorCalculateEvent extends CalculatorEvent {
 
   CalculatorCalculateEvent({required this.value, this.operator});
 }
+
+class CalculatorInitializeEvent extends CalculatorEvent {}

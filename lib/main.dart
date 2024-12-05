@@ -32,7 +32,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final calculatorBloc = context.read<CalculatorBloc>();
-
+    calculatorBloc.add(CalculatorInitializeEvent());
     return Scaffold(
       body: Column(
         children: <Widget>[
