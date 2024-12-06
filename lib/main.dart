@@ -6,7 +6,15 @@ import 'theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'calculator_state.dart';
 import 'calculator_event.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -48,30 +56,36 @@ class MyHomePage extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           child: BlocBuilder<CalculatorBloc, CalculatorState>(
                               builder: (context, state) => Text(
-                              state.calculatorText == ""
-                                  ? " "
-                                  : state.calculatorText,
-                              style: Theme.of(context).mathText,
-                              )))))),
+                                    state.calculatorText == ""
+                                        ? " "
+                                        : state.calculatorText,
+                                    style: Theme.of(context).mathText,
+                                  )))))),
           Expanded(
               child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: Row(children: [
                     CalculatorButton(
                       text: "7",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "7", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "7", operator: null)),
                     ),
                     CalculatorButton(
                       text: "8",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "8", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "8", operator: null)),
                     ),
                     CalculatorButton(
                       text: "9",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "9", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "9", operator: null)),
                     ),
                     CalculatorButton(
                       text: "×",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "×", operator: CalculatorOperator.multiply)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(
+                              value: "×",
+                              operator: CalculatorOperator.multiply)),
                       operator: CalculatorOperator.multiply,
                     ),
                   ]))),
@@ -81,19 +95,24 @@ class MyHomePage extends StatelessWidget {
                   child: Row(children: [
                     CalculatorButton(
                       text: "4",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "4", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "4", operator: null)),
                     ),
                     CalculatorButton(
                       text: "5",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "5", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "5", operator: null)),
                     ),
                     CalculatorButton(
                       text: "6",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "6", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "6", operator: null)),
                     ),
                     CalculatorButton(
                       text: "÷",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "÷", operator: CalculatorOperator.divide)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(
+                              value: "÷", operator: CalculatorOperator.divide)),
                       operator: CalculatorOperator.divide,
                     ),
                   ]))),
@@ -104,19 +123,25 @@ class MyHomePage extends StatelessWidget {
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     CalculatorButton(
                       text: "1",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "1", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "1", operator: null)),
                     ),
                     CalculatorButton(
                       text: "2",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "2", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "2", operator: null)),
                     ),
                     CalculatorButton(
                       text: "3",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "3", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "3", operator: null)),
                     ),
                     CalculatorButton(
                       text: "-",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "-", operator: CalculatorOperator.subtract)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(
+                              value: "-",
+                              operator: CalculatorOperator.subtract)),
                       operator: CalculatorOperator.subtract,
                     ),
                   ]))),
@@ -127,20 +152,26 @@ class MyHomePage extends StatelessWidget {
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     CalculatorButton(
                       text: "C",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorClearEvent()),
+                      onPressed: (value, operator) =>
+                          calculatorBloc.add(CalculatorClearEvent()),
                     ),
                     CalculatorButton(
                       text: "0",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "0", operator: null)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(value: "0", operator: null)),
                     ),
                     CalculatorButton(
                       text: "=",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "=", operator: CalculatorOperator.equal)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(
+                              value: "=", operator: CalculatorOperator.equal)),
                       operator: CalculatorOperator.equal,
                     ),
                     CalculatorButton(
                       text: "+",
-                      onPressed: (value, operator) => calculatorBloc.add(CalculatorCalculateEvent(value: "+", operator: CalculatorOperator.add)),
+                      onPressed: (value, operator) => calculatorBloc.add(
+                          CalculatorCalculateEvent(
+                              value: "+", operator: CalculatorOperator.add)),
                       operator: CalculatorOperator.add,
                     ),
                   ]))),

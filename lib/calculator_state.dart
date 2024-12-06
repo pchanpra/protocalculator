@@ -7,6 +7,7 @@ class CalculatorState {
   CalculatorOperator? currentOperator;
   String lastPressed;
   bool negative;
+  String? uid;
 
   CalculatorState({
     required this.calculatorText,
@@ -15,5 +16,6 @@ class CalculatorState {
     required this.currentOperator,
     required this.lastPressed,
     required this.negative,
+    this.uid,
   });
 }
